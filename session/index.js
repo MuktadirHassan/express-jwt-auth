@@ -47,27 +47,28 @@ client.connect((err) => {
     app.get("/p-users", async (req, res) => {
       // [1, 2, 3, 4, 5, 6] => 1 - 3, 4 - 6
 
-      /**
-       * take query params from the user -> limit, page
-       *
-       * run query
-       *
-       */
+      const limit = Number(req.query.limit) || 10;
 
-      const limit = req.query.limit || 10;
-      const page = req.query.page || 1;
+      // 2 -1 = 1 * 10 => 10
+      // 3 -1 = 2 * 10 => 20
+      const page = Number(req.query.page) - 1 || 0;
 
       console.log(req.query);
+      // limit
+      // 1 - 10, 11 - 20
 
       const users = await usersCollection
         .find({})
         .limit(limit)
-        .skip(limit * page)
+        .skip(page * limit)
         .toArray();
+
+      const count = await usersCollection.estimatedDocumentCount();
 
       res.send({
         status: "success",
         data: users,
+        count: count,
       });
     });
 
